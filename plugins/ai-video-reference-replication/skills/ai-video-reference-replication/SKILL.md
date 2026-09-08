@@ -12,7 +12,7 @@ description: Create reference-based ecommerce ads with AI visuals or supplied cl
 
 ## 시작 표시와 버전
 
-- 현재 자동화 버전: `1.7`
+- 현재 자동화 버전: `1.8`
 - 실제 영상 제작을 시작하면 `assets/automation-version.json`을 읽고 `버전 v{automationVersion} 업데이트 된 시각 {displayUpdatedAtKst}`를 먼저 표시한다. 유지보수 요청에서는 제작 인터뷰를 시작하지 않는다.
 
 
@@ -160,7 +160,7 @@ Do not combine company, product, reference, script, URL, clean-clip upload, rati
 
 ### Early ratio, TTS, and edit interview
 
-Before script planning or visual production, read `references/production-intake.md` completely and collect unresolved choices in this order: **영상 비율 → TTS 생성이랑 영상 편집까지 할까요? → TTS 방식 → 편집 분야**. TTS choices are **1. 레퍼런스 음성 / 2. 사용자 지정 음성**. Editing choices are **1. 건기식 / 2. 뷰티 / 3. 식품 / 4. 그외**. Ask only applicable, unanswered items using the numbered chat display contract above; do not merge these choice numbers with either mode menu above.
+Before script planning or visual production, read `references/production-intake.md` completely and collect unresolved choices in this order: **영상 비율 → 제작 범위 → TTS 방식 → 편집 분야**. The production-scope menu has exactly two options, with these exact labels: **1. 영상 생성 + AI 내레이션(TTS) + CapCut 편집 / 2. 영상생성만**. Map them to `tts_and_edit` and `visuals_only` respectively; never add TTS-only or edit-only options to this menu. Option 2 disables both TTS and CapCut editing and skips their voice/category questions. TTS choices are **1. 레퍼런스 음성 / 2. 사용자 지정 음성**. Editing choices are **1. 건기식 / 2. 뷰티 / 3. 식품 / 4. 그외**. Ask only applicable, unanswered items using the numbered chat display contract above; do not merge these choice numbers with either mode menu above.
 
 An earlier `편집까지 다 해줘` request already answers the scope and defaults the otherwise unspecified voice to the current reference. Skip those questions, preserve explicit voice/settings overrides, and collect only genuinely missing ratio/category/core inputs. Record normalized choices plus exact answers in `production-intake.json`. Once TTS/editing is selected, set `execution_mode: auto` for that selected scope and continue through its final deliverable without another mode, generation, TTS, or edit confirmation. Technical, source, and explicit user-reserved review boundaries remain in force.
 

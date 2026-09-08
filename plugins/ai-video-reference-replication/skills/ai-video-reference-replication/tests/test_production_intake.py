@@ -10,6 +10,31 @@ from production_intake import resolve
 
 
 class ProductionIntakeTests(unittest.TestCase):
+    def test_scope_menu_only_offers_full_production_or_visuals(self):
+        result = resolve({"output_ratio": "9:16"})
+        self.assertEqual([(x["number"], x["scope"]) for x in result["next_question_options"]],
+                         [("1", "tts_and_edit"), ("2", "visuals_only")])
+
+    def test_scope_menu_one_continues_to_voice_and_two_skips_voice_and_edit(self):
+        first = resolve({"output_ratio": "9:16", "scope_choice": "1", "scope_response_text": "1"})
+        self.assertTrue(first["tts"]["requested"])
+        self.assertTrue(first["capcut"]["requested"])
+        self.assertEqual(first["next_question"], "tts_voice_choice")
+        second = resolve({"output_ratio": "9:16", "scope_choice": 2, "scope_response_text": "2"})
+        self.assertEqual(second["scope"], "visuals_only")
+        self.assertFalse(second["tts"]["requested"])
+        self.assertFalse(second["capcut"]["requested"])
+        self.assertIsNone(second["next_question"])
+        self.assertTrue(second["script_approval"]["required"])
+        self.assertEqual(second["authorization"]["text"], "2")
+
+    def test_scope_menu_rejects_removed_numbers_and_conflicting_scope(self):
+        for number in (3, 4):
+            with self.assertRaisesRegex(ValueError, "INVALID_CHOICE: scope_choice"):
+                resolve({"scope_choice": number, "scope_response_text": str(number)})
+        with self.assertRaisesRegex(ValueError, "CONFLICTING_SCOPE_CHOICE"):
+            resolve({"scope_choice": 2, "scope": "tts_only", "scope_response_text": "2"})
+
     def both(self, **values):
         return {"output_ratio": "9:16", "scope": "tts_and_edit",
                 "scope_response_text": "어 TTS랑 편집까지 해줘", **values}

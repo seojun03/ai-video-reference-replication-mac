@@ -20,8 +20,12 @@ VOICES = {"1": "reference_voice", "레퍼런스음성": "reference_voice", "refe
           "2": "user_voice", "사용자지정음성": "user_voice", "user_voice": "user_voice"}
 SCOPES = {"tts_and_edit": (True, True), "tts_only": (True, False),
           "edit_only": (False, True), "visuals_only": (False, False)}
+SCOPE_MENU = [
+    {"number": "1", "label": "영상 생성 + AI 내레이션(TTS) + CapCut 편집", "scope": "tts_and_edit"},
+    {"number": "2", "label": "영상생성만", "scope": "visuals_only"},
+]
 SETTING_KEYS = {"model_id", "tags", "speed", "stability", "seed", "delivery_tag", "similarity_boost", "style"}
-ANSWER_KEYS = {"output_ratio", "scope", "scope_response_text", "tts_voice_choice", "tts_voice_response_text",
+ANSWER_KEYS = {"output_ratio", "scope", "scope_choice", "scope_response_text", "tts_voice_choice", "tts_voice_response_text",
                "edit_category_choice", "edit_category_response_text", "full_edit_requested", "full_edit_request_text",
                "script_review_requested", "visual_review_requested", "voice_id", "voice_name", "voice_source_path",
                "provided_audio_path", "caption_font", "voice_settings"}
@@ -69,6 +73,12 @@ def resolve(answers):
     if ratio is not None and ratio not in ("9:16", "1:1"):
         raise ValueError("OUTPUT_RATIO_UNSUPPORTED")
     scope = text(answers.get("scope"))
+    menu_scope = choice(answers.get("scope_choice"),
+                        {item["number"]: item["scope"] for item in SCOPE_MENU}, "scope_choice")
+    if menu_scope is not None:
+        if scope is not None and scope != menu_scope:
+            raise ValueError("CONFLICTING_SCOPE_CHOICE")
+        scope = menu_scope
     scope_text = text(answers.get("scope_response_text"))
     explicit_scope = scope is not None
     if explicit_scope and (scope not in SCOPES or not scope_text):
@@ -119,6 +129,7 @@ def resolve(answers):
         "mode_selection_source": "early_production_intake" if scope is not None else None,
         "authorization": authorization,
         "next_question": missing[0] if missing else None,
+        "next_question_options": copy.deepcopy(SCOPE_MENU) if missing and missing[0] == "production_scope" else None,
         "missing_fields": missing,
         "repeat_execution_mode_question": scope is None,
         "tts": {
