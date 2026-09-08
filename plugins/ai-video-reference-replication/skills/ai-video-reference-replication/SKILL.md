@@ -12,9 +12,13 @@ description: Create reference-based ecommerce ads with AI visuals or supplied cl
 
 ## 시작 표시와 버전
 
-- 현재 자동화 버전: `1.4`
+- 현재 자동화 버전: `1.5`
 - 실제 영상 제작을 시작하면 `assets/automation-version.json`을 읽고 `버전 v{automationVersion} 업데이트 된 시각 {displayUpdatedAtKst}`를 먼저 표시한다. 유지보수 요청에서는 제작 인터뷰를 시작하지 않는다.
 
+
+## 스킬 수정과 배포 완료 기준
+
+소유자는 2026-09-08 이 플러그인의 스킬 수정 요청에 공개 배포 반영까지 포함하도록 명시적으로 지정했다. 소유자 환경에서 이 스킬 또는 포함된 지원 스킬을 수정할 때는 `../../references/skill-maintenance.md`를 읽고 원본 수정 → 검증 → 로컬 설치 → 공개 릴리스 → 공개 파일 확인까지 완료한다. 로컬 수정만으로 완료를 보고하거나 같은 대상의 배포 승인을 다시 묻지 않는다. 최신 사용자 지시가 로컬 시험만 요청하거나 배포를 금지하면 그 제한을 우선한다. 받는 사람의 환경에 소유자의 배포 권한을 적용하지 않는다.
 
 ## Core contract
 
@@ -98,6 +102,16 @@ Create a plan-level `reference_profile` once, then let the five per-cut fields c
   }
 }
 ```
+
+## Startup question display — numbered choices
+
+Apply this display contract to Gate -1 and Gate 0 only; keep their question text, numbered options, order, and separate-turn boundaries unchanged.
+
+- When higher-priority environment instructions permit text choice menus, present the complete question and all numbered options together in the final chat response. Use a blank line before the numbered list. Do not substitute a selection widget merely because one is available, and never replace the menu with only “먼저 영상 제작 방식을 선택해주세요.”
+- When higher-priority environment instructions prohibit text choice menus or require a question tool, follow those instructions. Send the exact question as the tool title and each complete numbered option as a separate option. Preserve the original numbers and wording; do not add a recommendation or select an answer for the user.
+- After a successful asynchronous question submission, make the final response locate the choices and explain the alternative input: “질문 카드에 번호별 선택지를 보냈습니다. 카드에서 선택하거나 이 채팅에 번호로 답해주세요.” Do not repeat an option-free question as though it were the full menu. A tool's accepted result confirms submission, not that the user can see the card; never claim visual verification without evidence.
+- If the tool fails or the user reports that the card is missing, do not resend the same empty prompt. Use the complete numbered chat menu only when higher-priority instructions allow it; otherwise explain the actual display limitation and request the missing choice in one concise plain-text question without a multiple-choice list. Do not change app settings, switch modes, or claim that editing this skill overrides the environment restriction.
+- A request to diagnose or change this display behavior is skill maintenance. Finish the requested maintenance without restarting the production interview or treating example choice numbers as user answers.
 
 ## Gate -1 — video-source workflow mode
 

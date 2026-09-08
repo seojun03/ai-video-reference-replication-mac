@@ -18,7 +18,7 @@
 python3 ~/plugins/ai-video-reference-replication/scripts/refresh_plugin.py
 ```
 
-실제 내용이 바뀌면 버전 갱신 → 로컬 설치 → 테스트 → 배포 저장소 동기화 → macOS CI → 공개 릴리스까지 이어집니다. 설정은 소유자 PC의 `~/.codex/state/ai-video-reference-replication/publisher.json`에만 있으며 공유하지 않습니다. 동일 내용 재실행은 버전을 추가로 올리지 않습니다. 로컬에서만 시험할 때는 `VIDEO_REFERENCE_SKIP_AUTO_PUBLISH=1`을 해당 명령에 지정합니다.
+실제 내용이 바뀌면 버전 갱신 → 로컬 설치 → 테스트 → 배포 저장소 동기화 → macOS CI → 공개 릴리스까지 이어집니다. 설정은 소유자 PC의 `~/.codex/state/ai-video-reference-replication/publisher.json`에만 있으며 공유하지 않습니다. 동일 내용 재실행은 버전을 추가로 올리지 않습니다. 사용자가 명시적으로 로컬 시험만 요청했을 때는 `--local-only`를 지정합니다. 기본 명령은 배포 설정 누락·비활성 또는 공개 배포 실패를 성공으로 처리하지 않습니다. 기존 `VIDEO_REFERENCE_SKIP_AUTO_PUBLISH=1`은 조용히 배포를 생략하지 않고 오류를 반환합니다. 스킬 수정의 완료 기준은 `references/skill-maintenance.md`를 따릅니다.
 
 첫 공개 전후에도 실패한 CI 결과를 최신 릴리스로 올리지 않습니다. 공개된 네 가지 설치 자산은 다시 내려받아 해시를 비교합니다. 배포 실패는 실패로 보고하며 로컬 갱신을 수신자 배포 완료로 표시하지 않습니다.
 

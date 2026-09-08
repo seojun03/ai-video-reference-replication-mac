@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Refresh the local Goldhand plugin through the personal marketplace."""
+"""Refresh and publish the video plugin; local-only runs must be explicit."""
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
@@ -331,7 +332,29 @@ def marketplace_name() -> str:
 
 
 
-def main() -> int:
+def publication_required(local_only: bool) -> bool:
+    if local_only:
+        return False
+    if os.environ.get("VIDEO_REFERENCE_SKIP_AUTO_PUBLISH") == "1":
+        raise ValueError("환경변수로 배포를 생략할 수 없습니다. 명시적인 로컬 시험에는 --local-only를 사용하세요.")
+    if not PUBLISHER_CONFIG_PATH.is_file():
+        raise ValueError("배포 설정이 없어 공개 배포를 완료할 수 없습니다. 로컬 성공으로 처리하지 않습니다.")
+    config = load_json_object(PUBLISHER_CONFIG_PATH)
+    if config.get("autoPublish") is not True:
+        raise ValueError("자동 배포가 비활성입니다. 로컬 성공으로 처리하지 않습니다.")
+    if config.get("repository") != "seojun03/ai-video-reference-replication-mac":
+        raise ValueError("공개 배포 저장소가 지정된 영상 플러그인 저장소와 다릅니다.")
+    return True
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--local-only", action="store_true", help="명시적인 로컬 시험 전용; 공개 배포 미완료로 표시")
+    args = parser.parse_args(argv)
+    try:
+        should_publish = publication_required(args.local_only)
+    except (OSError, ValueError) as exc:
+        return fail(f"배포 사전 확인 실패: {exc}")
     cachebuster = CREATOR_SCRIPTS / "update_plugin_cachebuster.py"
     validator = CREATOR_SCRIPTS / "validate_plugin.py"
     if not cachebuster.is_file() or not validator.is_file():
@@ -350,11 +373,9 @@ def main() -> int:
             mark_package_version()
         run("codex", "plugin", "add", f"{PLUGIN_NAME}@{name}")
         published = False
-        if os.environ.get("VIDEO_REFERENCE_SKIP_AUTO_PUBLISH") != "1" and PUBLISHER_CONFIG_PATH.is_file():
-            publisher_config = load_json_object(PUBLISHER_CONFIG_PATH)
-            if publisher_config.get("autoPublish") is True:
-                run(sys.executable, str(PLUGIN_ROOT / "scripts/publish_update.py"))
-                published = True
+        if should_publish:
+            run(sys.executable, str(PLUGIN_ROOT / "scripts/publish_update.py"))
+            published = True
     except (OSError, ValueError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
         return fail(f"플러그인 새로고침 실패: {exc}")
     if removed_duplicate:
@@ -372,6 +393,8 @@ def main() -> int:
     print("영상 생성 플러그인을 하나의 개인 플러그인으로 새로고침했습니다. 새 Codex 작업에서 확인하세요.")
     if published:
         print("GitHub 공개 릴리스와 사용자 자동 업데이트 배포까지 완료했습니다.")
+    else:
+        print("명시적인 로컬 시험만 완료했습니다. 공개 배포는 미완료입니다.")
     return 0
 
 
