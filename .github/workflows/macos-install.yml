@@ -27,7 +27,7 @@ jobs:
       - name: Delivery and production contract tests
         run: python -m pytest -q -p no:cacheprovider plugins/ai-video-reference-replication/tests plugins/ai-video-reference-replication/skills/ai-video-reference-replication/tests
       - name: Real Codex installation, failed update rollback, and version upgrade
-        run: python plugins/ai-video-reference-replication/scripts/test_real_install.py
+        run: python plugins/ai-video-reference-replication/scripts/ci_install_check.py
       - name: Verify standalone installer syntax and executable ZIP
         run: |
           python - <<'PY'
