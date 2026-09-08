@@ -1,0 +1,4 @@
+interface:
+  display_name: "제품 맞춤 대본 작성"
+  short_description: "이전 영상 논리를 계승해 제품 맞춤 대본을 작성합니다"
+  default_prompt: "Use $product-script-writer to collect 업체명, 제품명, and 레퍼런스 대본, load the exact product_context.md, then discover and read the same product's recent approved or actual edit-input video scripts. Build prior_video_logic from those sources before creating the persuasive restructured 미검증 컨셉 초안. Never borrow another company or product's logic."

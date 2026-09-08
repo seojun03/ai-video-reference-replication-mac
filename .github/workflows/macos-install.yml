@@ -1,0 +1,42 @@
+name: macOS managed plugin install
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install validation tools
+        run: |
+          python -m pip install -r plugins/ai-video-reference-replication/requirements.txt
+          npm install -g @openai/codex
+      - name: Delivery and production contract tests
+        run: python -m pytest -q -p no:cacheprovider plugins/ai-video-reference-replication/tests plugins/ai-video-reference-replication/skills/ai-video-reference-replication/tests
+      - name: Real Codex installation, failed update rollback, and version upgrade
+        run: python plugins/ai-video-reference-replication/scripts/test_real_install.py
+      - name: Verify standalone installer syntax and executable ZIP
+        run: |
+          python - <<'PY'
+          import importlib.util, tempfile, zipfile
+          from pathlib import Path
+          root = Path('plugins/ai-video-reference-replication').resolve()
+          spec = importlib.util.spec_from_file_location('publisher', root/'scripts/publish_update.py')
+          m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          with tempfile.TemporaryDirectory() as d:
+              m.build_artifacts(root, Path(d))
+              with zipfile.ZipFile(Path(d)/'INSTALL-MAC.zip') as z:
+                  assert z.getinfo('INSTALL-MAC.command').external_attr >> 16 & 0o111
+          PY

@@ -1,0 +1,4 @@
+interface:
+  display_name: "제품 상세페이지 광고 지식 추출"
+  short_description: "상세페이지를 분석해 광고용 AI 제품 지식 문서로 정리"
+  default_prompt: "$extract-product-ad-knowledge로 현재 상세페이지를 분석해 AI가 학습할 수 있는 광고용 제품 지식 문서로 정리해줘."

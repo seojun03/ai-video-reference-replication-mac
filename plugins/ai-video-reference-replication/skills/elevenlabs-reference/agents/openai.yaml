@@ -1,0 +1,4 @@
+interface:
+  display_name: "일레븐랩스 레퍼런스"
+  short_description: "레퍼런스 말투를 자연스럽게 전이해 한국어 TTS를 검수합니다"
+  default_prompt: "Use $elevenlabs-reference to transfer my authorized reference voice's character, tone, pacing, intonation, pauses, and breath density into one natural connected Korean TTS take, without artificial word splitting, and prepare only a passing preview for my listening approval."

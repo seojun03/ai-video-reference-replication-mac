@@ -1,0 +1,4 @@
+interface:
+  display_name: "캡컷 자동화"
+  short_description: "승인 규칙을 컴파일해 새 CapCut 타임라인을 편집합니다"
+  default_prompt: "$capcut-automation으로 요청을 처리해줘. 일반 컷편집은 공통 컷편집 스킬의 실제 발음 시작·짧은 쉼·기본 자막 기준으로 바로 연결하고, 별도로 요청한 스타일 제작만 레거시 인터뷰와 계약 절차를 적용해줘."

@@ -1,0 +1,6 @@
+interface:
+  display_name: "문맥별 CapCut 컷편집"
+  short_description: "기존 컷편집에 제품 종류별 클린본 화면 선택·배치·구도 적용"
+  default_prompt: "$capcut-semantic-cut-edit로 대본·클린본·음성을 컷편집해줘. 전역 기본값의 실제 발음 시작과 짧은 쉼·자막 기준을 적용하고, 제품 종류별로는 화면 선택·배치만 달리해줘."
+policy:
+  allow_implicit_invocation: true

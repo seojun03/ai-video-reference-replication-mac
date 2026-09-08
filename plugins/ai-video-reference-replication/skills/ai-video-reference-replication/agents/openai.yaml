@@ -1,0 +1,13 @@
+interface:
+  display_name: "영상 생성"
+  short_description: "초반 비율·음성·분야 선택으로 영상 생성부터 캡컷 편집까지"
+  default_prompt: "Use $ai-video-reference-replication to collect source/script mode, ratio, TTS/edit scope, reference or user-selected voice, and editing category early. In planning mode, after company, product, and reference are known, always ask whether I have a script or draft; use it as the primary planning input when present and create a new script only when I say none exists. Then finish the selected work without repeated confirmations; if I already asked for editing through completion, default to the current reference voice unless I specified another voice."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "higgsfield"
+      description: "Higgsfield MCP for the AI-generation branch only: media upload, Kling v3.0 video generation, and video analysis; no image generation"
+      transport: "streamable_http"
+      url: "https://mcp.higgsfield.ai/mcp"
+policy:
+  allow_implicit_invocation: true

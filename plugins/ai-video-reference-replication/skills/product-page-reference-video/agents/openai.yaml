@@ -1,0 +1,13 @@
+interface:
+  display_name: "상세페이지 기반 AI 영상 자동화"
+  short_description: "업체별 제품 자산과 상세페이지로 일관된 레퍼런스 영상을 설계"
+  default_prompt: "Use $product-page-reference-video. First ask only for any missing company name, product name, product detail page URL, reference video, exact script source, and 1:1 or 9:16 ratio. Resolve the exact company/product library, reuse only approved matching assets, and plan a QC-checked built-in ImageGen product master when needed. Follow the parent plan's image_generation_mode: Higgsfield-only, OpenAI GPT Image 2-only, or hybrid parallel candidates. Select exactly one QC-passing start still per cut and keep Kling v3.0 for motion after Gate 1 approval."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "higgsfield"
+      description: "Higgsfield MCP for GPT Image 2 keyframes, Kling v3.0 video generation, model checks, costs, and job inspection"
+      transport: "streamable_http"
+      url: "https://mcp.higgsfield.ai/mcp"
+policy:
+  allow_implicit_invocation: true

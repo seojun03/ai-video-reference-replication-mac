@@ -1,0 +1,4 @@
+interface:
+  display_name: "CapCut 컷편집"
+  short_description: "실제 첫 발음에 맞춘 영상·자막 경계와 자연스러운 짧은 쉼 편집"
+  default_prompt: "$capcut-cut-edit로 컷편집해줘. 승인된 전역 기본값으로 쉼을 정리하고 모든 자막을 실제 발음 시작에 맞춰 새 CapCut 타임라인에 저장해줘."

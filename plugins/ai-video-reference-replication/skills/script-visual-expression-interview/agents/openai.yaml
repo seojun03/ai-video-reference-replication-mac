@@ -1,0 +1,4 @@
+interface:
+  display_name: "대본 표현 정보 인터뷰"
+  short_description: "대본을 영상으로 옮기는 데 필요한 제품 정보만 선별 인터뷰"
+  default_prompt: "Use $script-visual-expression-interview to analyze this script and ask only for missing product information whose answer would materially change the video's scenes, actions, settings, or visible state changes."

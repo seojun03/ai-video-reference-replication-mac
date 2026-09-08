@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "skill": "ai-video-reference-replication",
+      "originalSkillSha256": "d4795bf2e8efc07f89a641d00780314e278afc7990bf873e7b0020cc868e28ad"
+    },
+    {
+      "skill": "capcut-automation",
+      "originalSkillSha256": "53441a9d14e8fd77c34ea9982d7a376adff5a66948bb52c605c9245def748d42"
+    },
+    {
+      "skill": "capcut-cut-edit",
+      "originalSkillSha256": "dee91786cb9f29ee27b491c0e8dde253cb6c9991e2f0968f932e23c72524be38"
+    },
+    {
+      "skill": "capcut-semantic-cut-edit",
+      "originalSkillSha256": "954402e7b4ed1e22e82b3cd1d70dc7f597ba74c0a5789c3dc84f2b5f7bd2306b"
+    },
+    {
+      "skill": "elevenlabs-reference",
+      "originalSkillSha256": "a07c59da7f7ec803abe8f2191b9645cba03397ea90cc4f34d67b7b486a507a1f"
+    },
+    {
+      "skill": "product-script-writer",
+      "originalSkillSha256": "d63b9ae230cb7f1ee1a88c40c596ec4c55e82c58b3f490db2781ec6c50f0cf11"
+    },
+    {
+      "skill": "script-visual-expression-interview",
+      "originalSkillSha256": "05f66eaf7a9dadc5cd2faa0dd9ad07706297a236e76af0b83efcbc584f7876e0"
+    },
+    {
+      "skill": "product-page-reference-video",
+      "originalSkillSha256": "3ac69725faf703f212eed8cd7b317979d830e1fc043b39bb1a4b3cb882550d25"
+    },
+    {
+      "skill": "extract-product-ad-knowledge",
+      "originalSkillSha256": "9c1bf7820236631eea3a812eabe2b63db5e09842b21a182e8081ab4a61155d81"
+    }
+  ],
+  "privateDataIncluded": false
+}
