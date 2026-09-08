@@ -72,7 +72,8 @@ def main():
     print('Waiting for macOS CI at ' + commit, flush=True)
     deadline = time.monotonic() + 1200
     while time.monotonic() < deadline:
-        runs = json.loads(run(['gh', 'run', 'list', '--repo', REPO, '--commit', commit, '--workflow', 'macos-install.yml', '--json', 'databaseId,status,conclusion', '--limit', '5']))
+        runs = json.loads(run(['gh', 'run', 'list', '--repo', REPO, '--commit', commit, '--json', 'databaseId,status,conclusion,workflowName', '--limit', '5']))
+        runs = [item for item in runs if item.get('workflowName') == 'macOS managed plugin install']
         if runs and runs[0]['status'] == 'completed':
             if runs[0]['conclusion'] != 'success':
                 raise SystemExit('macOS CI failed: ' + str(runs[0]['databaseId']))
