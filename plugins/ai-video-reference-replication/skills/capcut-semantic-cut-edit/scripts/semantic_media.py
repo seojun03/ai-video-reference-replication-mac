@@ -14,6 +14,11 @@ from semantic_contract import (PlanError, framing_geometry, cut_hash, descriptor
                                read_json, require, sha256, validate_voice, write_new_json)
 
 
+# One shared gate for native dialogue, recorded voice and TTS, in this installed bundle.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "capcut-cut-edit/scripts"))
+from pause_audit import PauseAuditError, build_audit, validate_audit, scan_pcm, policy as pause_policy
+
+
 def outside_project(path):
     path = Path(path).expanduser().resolve()
     require("com.lveditor.draft" not in path.parts, "STAGE_OUTSIDE_PROJECT", str(path))
@@ -171,36 +176,32 @@ def waveform(pcm):
 
 
 def silence_candidates(pcm, kind):
-    """Sample-level -42 dB candidates only; never authorizes removing speech."""
+    """Shared full-range candidates; recorded speech is never restricted to >=0.5 s."""
     require(kind in ("tts", "recorded"), "VOICE_KIND")
-    samples = array.array("h", pcm)
-    if sys.byteorder != "little": samples.byteswap()
-    threshold = 32768 * 10 ** (-42 / 20)
-    spans, start = [], None
-    for i, value in enumerate(samples):
-        if abs(value) <= threshold:
-            if start is None: start = i
-        elif start is not None:
-            if i - start >= 1440: spans.append((start, i))
-            start = None
-    if start is not None and len(samples) - start >= 1440: spans.append((start, len(samples)))
     candidates = []
-    for a, b in spans:
-        start_us, end_us = a * 1_000_000 // 48000, b * 1_000_000 // 48000
-        if a == 0 or b == len(samples):
-            if kind != "tts": continue  # No blanket TTS edge trimming on recorded speech.
-            remove_a = start_us if a == 0 else start_us + 50_000
-            remove_b = end_us - 20_000 if a == 0 else end_us
-            label = "leading_silence" if a == 0 else "trailing_silence"
-        else:
-            minimum, retained = (200_000, 100_000) if kind == "tts" else (500_000, 200_000)
-            if end_us - start_us < minimum: continue
-            remove_a, remove_b, label = start_us + retained // 2, end_us - retained // 2, "internal_pause"
-        if remove_a < remove_b:
-            candidates.append({"kind": label, "source_start_us": start_us, "source_end_us": end_us,
-                               "remove_start_us": remove_a, "remove_end_us": remove_b,
-                               "status": "candidate_requires_review"})
-    return candidates
+    p = pause_policy()
+    # Preserve the separate TTS edge behavior; internal discovery is shared.
+    if kind == "tts":
+        samples = array.array("h", pcm)
+        if sys.byteorder != "little": samples.byteswap()
+        limit = 32768 * 10 ** (-42 / 20)
+        first, last = 0, len(samples)
+        while first < last and abs(samples[first]) <= limit: first += 1
+        while last > first and abs(samples[last - 1]) <= limit: last -= 1
+        for a, b, x, y, label in [(0, first, 0, first - 960, "leading_silence"),
+                                  (last, len(samples), last + 2400, len(samples), "trailing_silence")]:
+            if b - a >= 1440 and x < y:
+                candidates.append({"kind": label, "source_start_us": a * 1000000 // 48000,
+                                   "source_end_us": b * 1000000 // 48000, "remove_start_us": x * 1000000 // 48000,
+                                   "remove_end_us": y * 1000000 // 48000, "status": "candidate_requires_review"})
+    half_keep = round(p["retained_pause_target_seconds"] * 1_000_000 / 2)
+    for row in scan_pcm(pcm, 48000):
+        if row["kind"] != "internal": continue
+        a, b = row["start_us"], row["end_us"]
+        candidates.append({"kind": "internal_pause", "source_start_us": a, "source_end_us": b,
+                           "remove_start_us": a + half_keep, "remove_end_us": b - half_keep,
+                           "status": "candidate_requires_review", "detector_db": row["detector_db"]})
+    return sorted(candidates, key=lambda row: row["source_start_us"])
 
 
 def analyze_voice(asset, kind, output):
@@ -229,6 +230,8 @@ def prepare_audio(plan, output):
         out.setnchannels(1); out.setsampwidth(2); out.setframerate(48_000); out.writeframes(pcm)
     evidence = {"audio": file_ref(path), "cut_sha256": cut_hash(plan), "review_note": "",
                 "waveform": {"sample_rate": 48_000, "step_us": 10_000, "rows": waveform(pcm)},
+                "pause_audit": build_audit(path, cut_hash(plan), plan["composition"]["fps"],
+                                           [frame_us(c["start_frame"], plan["composition"]["fps"]) for c in plan["voice"]["cuts"]]),
                 "note": "QC-only mono decode. Native timeline references original voice cuts, not this rendered file. Onsets require actual speech review."}
     write_new_json(output / "speech-evidence.json", evidence)
     return evidence
@@ -241,4 +244,10 @@ def verify_audio(plan):
         require((source.getnchannels(), source.getsampwidth(), source.getframerate()) == (1, 2, 48_000), "AUDIO_QC_FORMAT")
         actual = source.readframes(source.getnframes())
     require(actual == audio_pcm(plan), "AUDIO_CUT_MISMATCH")
-    return {"sample_count": len(actual) // 2, "sample_rate": 48_000, "status": "cut_audio_verified"}
+    try:
+        pause_result = validate_audit(plan["speech"].get("pause_audit"), audio=plan["speech"]["audio"]["path"],
+                                      cut_sha256=cut_hash(plan), fps=plan["composition"]["fps"],
+                                      boundaries_us=[frame_us(c["start_frame"], plan["composition"]["fps"]) for c in plan["voice"]["cuts"]])
+    except PauseAuditError as exc:
+        raise PlanError(str(exc)) from exc
+    return {"sample_count": len(actual) // 2, "sample_rate": 48_000, "status": "cut_audio_verified", "pause_audit": pause_result}

@@ -12,7 +12,7 @@ description: Create reference-based ecommerce ads with AI visuals or supplied cl
 
 ## 시작 표시와 버전
 
-- 현재 자동화 버전: `1.8`
+- 현재 자동화 버전: `1.9`
 - 실제 영상 제작을 시작하면 `assets/automation-version.json`을 읽고 `버전 v{automationVersion} 업데이트 된 시각 {displayUpdatedAtKst}`를 먼저 표시한다. 유지보수 요청에서는 제작 인터뷰를 시작하지 않는다.
 
 

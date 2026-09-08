@@ -23,6 +23,13 @@ PROJECT_ID = "22222222-2222-4222-8222-222222222222"
 META_ID = "33333333-3333-4333-8333-333333333333"
 
 
+def reviewed_tone_audio(plan, output):
+    result = prepare_audio(plan, output)
+    assert not result["pause_audit"]["candidates"]
+    result["pause_audit"]["full_audio_review"] = {"reviewed": True, "note": "Synthetic continuous tone fixture, no speech or internal pauses; structural test only."}
+    return result
+
+
 class NativeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -46,7 +53,7 @@ class NativeTests(unittest.TestCase):
             clip["review"] = contact_sheet(cls.base_plan["assets"]["clean"], clip["source_in_us"],
                                            clip["source_in_us"] + 10_000_000, clip["framing"], cls.media / f"review-{i}")
             clip["review"]["note"] = "합성 파란 영상의 세 시점을 검사하는 기술 테스트; 실제 식품 판단 아님"
-        cls.base_plan["speech"] = prepare_audio(cls.base_plan, cls.media / "audio-qc")
+        cls.base_plan["speech"] = reviewed_tone_audio(cls.base_plan, cls.media / "audio-qc")
         cls.base_plan["speech"]["review_note"] = "합성 톤 기반의 타이밍 테스트; 실제 발화 청취 아님"
 
     @classmethod
@@ -288,28 +295,32 @@ class NativeTests(unittest.TestCase):
         self.assertEqual([(r["remove_start_us"], r["remove_end_us"]) for r in rows], [(0, 980000), (2050000, 3000000)])
         self.assertTrue(all(r["status"] == "candidate_requires_review" for r in rows))
 
-    def test_recorded_pause_candidates_keep_short_breaths_and_review_padding(self):
+    def test_recorded_pause_candidates_include_sub_half_second_interiors(self):
         from semantic_media import silence_candidates
         speech = b"\x10\x27" * 48000
-        # Recorded edges stay untouched; only the half-second internal gap qualifies.
-        pcm = bytes(48000 * 2) + speech + bytes(23999 * 2) + speech + bytes(24000 * 2) + speech + bytes(48000 * 2)
+        pcm = bytes(48000 * 2) + speech + bytes(12000 * 2) + speech + bytes(24000 * 2) + speech + bytes(48000 * 2)
         rows = silence_candidates(pcm, "recorded")
-        self.assertEqual(len(rows), 1)
-        row = rows[0]
-        self.assertEqual(row["kind"], "internal_pause")
-        self.assertEqual(row["source_end_us"] - row["source_start_us"], 500000)
-        self.assertEqual(row["remove_start_us"] - row["source_start_us"], 100000)
-        self.assertEqual(row["source_end_us"] - row["remove_end_us"], 100000)
-        self.assertEqual(row["status"], "candidate_requires_review")
+        self.assertEqual(len(rows), 2)
+        self.assertEqual([r["source_end_us"] - r["source_start_us"] for r in rows], [250000, 500000])
+        self.assertTrue(all(r["remove_start_us"] - r["source_start_us"] == 50000 for r in rows))
+        self.assertTrue(all(r["status"] == "candidate_requires_review" for r in rows))
 
-    def test_tts_internal_pause_threshold_stays_separate_from_recorded(self):
+    def test_tts_and_recorded_both_discover_short_internal_pauses(self):
         from semantic_media import silence_candidates
         speech = b"\x10\x27" * 48000
         pcm = speech + bytes(9600 * 2) + speech
-        self.assertEqual(silence_candidates(pcm, "recorded"), [])
-        row, = silence_candidates(pcm, "tts")
-        self.assertEqual((row["remove_start_us"], row["remove_end_us"]), (1050000, 1150000))
-        self.assertEqual(row["status"], "candidate_requires_review")
+        for kind in ["recorded", "tts"]:
+            row, = silence_candidates(pcm, kind)
+            self.assertEqual((row["remove_start_us"], row["remove_end_us"]), (1050000, 1150000))
+            self.assertEqual(row["status"], "candidate_requires_review")
+
+    def test_missing_pause_review_blocks_binding_before_any_project_write(self):
+        self.plan["speech"].pop("pause_audit")
+        self.plan_path.write_text(json.dumps(self.plan))
+        before = {str(p.relative_to(self.project)): sha256(p) for p in self.project.rglob("*") if p.is_file()}
+        with self.assertRaisesRegex(PlanError, "PAUSE_AUDIT_REQUIRED"):
+            self.bind()
+        self.assertEqual({str(p.relative_to(self.project)): sha256(p) for p in self.project.rglob("*") if p.is_file()}, before)
 
     def test_wrong_audio_bytes_cannot_pass_merely_by_updating_hash(self):
         fake = self.root / "fake.wav"
@@ -430,7 +441,7 @@ class NativeTests(unittest.TestCase):
         subprocess.run(["ffmpeg", "-v", "error", "-n", "-i", str(self.video), "-i", str(self.voice),
                         "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-shortest", str(mp4)], check=True)
         self.plan["assets"]["voice"] = probe_asset(mp4, "voice")
-        self.plan["speech"] = prepare_audio(self.plan, self.root / "mp4-voice-review")
+        self.plan["speech"] = reviewed_tone_audio(self.plan, self.root / "mp4-voice-review")
         self.plan["speech"]["review_note"] = "합성 MP4 음성 트랙 기술 검사"
         self.plan_path = self.root / "mp4-plan.json"; write_new_json(self.plan_path, self.plan)
         stage, _ = self.stage()
@@ -531,7 +542,7 @@ class NativeTests(unittest.TestCase):
         self.plan["voice"]["cuts"] = [
             {"start_frame": 0, "end_frame": 150, "source_in_us": 0},
             {"start_frame": 150, "end_frame": 450, "source_in_us": 20_000_000}]
-        self.plan["speech"] = prepare_audio(self.plan, self.root / "cut-audio")
+        self.plan["speech"] = reviewed_tone_audio(self.plan, self.root / "cut-audio")
         self.plan["speech"]["review_note"] = "합성 톤 기술 검사"
         self.plan_path = self.root / "recut-plan.json"; write_new_json(self.plan_path, self.plan)
         stage, _ = self.stage()
