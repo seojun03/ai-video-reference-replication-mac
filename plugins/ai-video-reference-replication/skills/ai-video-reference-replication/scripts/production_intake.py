@@ -60,6 +60,7 @@ def resolve(answers):
     if unknown:
         raise ValueError("UNEXPECTED_ANSWER_FIELDS: " + ", ".join(sorted(unknown)))
     full_request = flag(answers, "full_edit_requested")
+    flag(answers, "script_review_requested")  # Legacy answer remains provenance, never an approval waiver.
     full_text = text(answers.get("full_edit_request_text"))
     if full_request and not full_text:
         raise ValueError("FULL_EDIT_REQUEST_QUOTE_REQUIRED")
@@ -138,9 +139,16 @@ def resolve(answers):
             "target_policy": "exact_existing_company_project_new_editable_timeline" if edit_requested else None,
         },
         "delegation": {
-            "script_preparation": edit_requested and not flag(answers, "script_review_requested"),
+            "script_preparation": False,
+            "script_auto_approval": False,
             "visual_decisions": edit_requested and not flag(answers, "visual_review_requested"),
             "user_reserved_reviews_preserved": True,
+        },
+        "script_approval": {
+            "required": True,
+            "status": "awaiting_script_confirmation",
+            "policy": "explicit_user_confirmation_of_exact_script_sha256",
+            "production_blocked_until_confirmed": True,
         },
         "answers": copy.deepcopy(answers),
         "boundary": "Interview choices only; not proof of media, voice rights, cost limits, QC, or saved delivery.",

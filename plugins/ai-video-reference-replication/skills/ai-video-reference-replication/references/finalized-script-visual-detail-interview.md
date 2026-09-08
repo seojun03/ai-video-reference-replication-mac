@@ -4,7 +4,9 @@ Use this reference only for Gate 0.5 after the target script is exact. The gate 
 
 ## Trigger and stop boundary
 
-Run the gate for all exact-script sources:
+Require a real user-confirmation receipt matching the current exact script SHA-256 before this gate. End-to-end delegation and completed intake choices are not script approval. Revised scripts require renewed confirmation. Legacy `planned_under_end_to_end_delegation` is provenance only and cannot bypass this requirement.
+
+Run the gate for all confirmed exact-script sources:
 
 - `planned_and_user_approved`;
 - `planned_under_end_to_end_delegation`;

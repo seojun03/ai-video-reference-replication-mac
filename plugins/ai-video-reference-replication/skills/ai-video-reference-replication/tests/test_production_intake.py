@@ -90,6 +90,27 @@ class ProductionIntakeTests(unittest.TestCase):
         self.assertFalse(result["delegation"]["script_preparation"])
         self.assertFalse(result["delegation"]["visual_decisions"])
 
+    def test_full_delegation_never_confirms_a_script(self):
+        for review in (False, True):
+            with self.subTest(review=review):
+                result = resolve(self.full(output_ratio="9:16", edit_category_choice=4, script_review_requested=review))
+                self.assertEqual(result["execution_mode"], "auto")
+                self.assertFalse(result["delegation"]["script_preparation"])
+                self.assertFalse(result["delegation"]["script_auto_approval"])
+                self.assertTrue(result["script_approval"]["production_blocked_until_confirmed"])
+                self.assertEqual(result["script_approval"]["status"], "awaiting_script_confirmation")
+                self.assertEqual(result["answers"]["script_review_requested"], review)
+
+    def test_every_scope_requires_script_confirmation_even_when_choices_are_ready(self):
+        for scope in ("visuals_only", "tts_only", "edit_only", "tts_and_edit"):
+            with self.subTest(scope=scope):
+                result = resolve({"output_ratio": "9:16", "scope": scope, "scope_response_text": scope,
+                                  "tts_voice_choice": 1, "edit_category_choice": 4,
+                                  "provided_audio_path": "/provided/voice.wav"})
+                self.assertIsNone(result["next_question"])
+                self.assertTrue(result["script_approval"]["required"])
+                self.assertTrue(result["script_approval"]["production_blocked_until_confirmed"])
+
     def test_quoted_words_are_not_automatically_parsed_as_an_execution_request(self):
         result = resolve({"output_ratio": "9:16", "full_edit_request_text": "스킬 예시로 '편집까지 다 해줘'를 추가해줘"})
         self.assertEqual(result["next_question"], "production_scope")
