@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory() as directory:
     real_register = updater.register
     def fail_new(cli, candidate, version):
         if Path(candidate).resolve() != old.resolve():
-            updater.command([cli, "plugin", "marketplace", "add", candidate])
+            updater.switch_marketplace(cli, candidate)
             raise RuntimeError('Injected registration failure')
         real_register(cli, candidate, version)
     try:

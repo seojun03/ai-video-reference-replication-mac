@@ -83,6 +83,12 @@ class ManagedUpdateTests(unittest.TestCase):
             self.assertEqual(self.updater.update(root)['status'], 'already_running')
             latest.assert_not_called()
 
+    def test_source_switch_uses_cli_and_preserves_plugin_until_new_install(self):
+        with patch.object(self.updater, 'previous_source', return_value=self.root / 'old'), patch.object(self.updater, 'command') as command:
+            self.updater.switch_marketplace('codex', self.root / 'new')
+        self.assertEqual(command.call_args_list[0].args[0], ['codex', 'plugin', 'marketplace', 'remove', self.updater.MARKETPLACE])
+        self.assertEqual(command.call_args_list[1].args[0], ['codex', 'plugin', 'marketplace', 'add', self.root / 'new'])
+
     def test_unlisted_file_is_rejected(self):
         staged, version = self.stage('stage')
         (staged / 'extra.py').write_text('pass')

@@ -150,8 +150,17 @@ def previous_source(cli):
     return None
 
 
-def register(cli, root, version):
+def switch_marketplace(cli, root):
+    previous = previous_source(cli)
+    if previous is not None and previous.resolve() != Path(root).resolve():
+        # The CLI cannot replace a source with add alone. Only the source registration
+        # changes here; activate retains the old folder and restores it on any failure.
+        command([cli, 'plugin', 'marketplace', 'remove', MARKETPLACE])
     command([cli, 'plugin', 'marketplace', 'add', root])
+
+
+def register(cli, root, version):
+    switch_marketplace(cli, root)
     command([cli, 'plugin', 'add', NAME + '@' + MARKETPLACE])
     result = json.loads(command([cli, 'plugin', 'list', '--marketplace', MARKETPLACE, '--json']).stdout)
     match = [p for p in result.get('installed', []) if p.get('pluginId') == NAME + '@' + MARKETPLACE]
