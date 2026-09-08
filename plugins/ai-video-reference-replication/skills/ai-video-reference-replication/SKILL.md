@@ -12,7 +12,7 @@ description: Create reference-based ecommerce ads with AI visuals or supplied cl
 
 ## 시작 표시와 버전
 
-- 현재 자동화 버전: `1.5`
+- 현재 자동화 버전: `1.6`
 - 실제 영상 제작을 시작하면 `assets/automation-version.json`을 읽고 `버전 v{automationVersion} 업데이트 된 시각 {displayUpdatedAtKst}`를 먼저 표시한다. 유지보수 요청에서는 제작 인터뷰를 시작하지 않는다.
 
 
@@ -103,15 +103,24 @@ Create a plan-level `reference_profile` once, then let the five per-cut fields c
 }
 ```
 
-## Startup question display — numbered choices
+## 질문 표시 — 채팅 번호 목록
 
-Apply this display contract to Gate -1 and Gate 0 only; keep their question text, numbered options, order, and separate-turn boundaries unchanged.
+이 플러그인의 사용자 질문은 카드가 아닌 일반 채팅에 남는 번호 목록으로 표시한다. Gate -1, Gate 0, 초반 제작 인터뷰, 시각 표현 인터뷰, 실행 방식 선택과 이 워크플로에서 호출하는 하위 스킬에 동일하게 적용한다.
 
-- When higher-priority environment instructions permit text choice menus, present the complete question and all numbered options together in the final chat response. Use a blank line before the numbered list. Do not substitute a selection widget merely because one is available, and never replace the menu with only “먼저 영상 제작 방식을 선택해주세요.”
-- When higher-priority environment instructions prohibit text choice menus or require a question tool, follow those instructions. Send the exact question as the tool title and each complete numbered option as a separate option. Preserve the original numbers and wording; do not add a recommendation or select an answer for the user.
-- After a successful asynchronous question submission, make the final response locate the choices and explain the alternative input: “질문 카드에 번호별 선택지를 보냈습니다. 카드에서 선택하거나 이 채팅에 번호로 답해주세요.” Do not repeat an option-free question as though it were the full menu. A tool's accepted result confirms submission, not that the user can see the card; never claim visual verification without evidence.
-- If the tool fails or the user reports that the card is missing, do not resend the same empty prompt. Use the complete numbered chat menu only when higher-priority instructions allow it; otherwise explain the actual display limitation and request the missing choice in one concise plain-text question without a multiple-choice list. Do not change app settings, switch modes, or claim that editing this skill overrides the environment restriction.
-- A request to diagnose or change this display behavior is skill maintenance. Finish the requested maintenance without restarting the production interview or treating example choice numbers as user answers.
+- 질문 문장 다음에 빈 줄을 두고 `1.`, `2.` 형식으로 모든 선택지를 같은 최종 답변에 표시한다. 각 항목에는 선택지 이름과 사용자가 차이를 이해할 수 있는 짧은 설명을 쓴다. 이미 정해진 메뉴 문구·번호·순서는 유지한다.
+- 질문 카드, 선택 위젯, 비동기 입력 UI를 기본값이나 카드가 사라졌을 때의 재시도 경로로 사용하지 않는다. `request_user_input`, `request_user_input_async` 같은 도구가 있다는 이유만으로 채팅 질문을 도구 호출로 바꾸지 않는다. “카드에서 선택해주세요” 또는 “번호로 답해주세요”만 남기고 선택지를 생략하지 않는다.
+- 사용자가 현재 질문의 번호나 선택지 이름으로 답하면 그대로 접수한다. 첫 제작 방식과 대본 준비 방식은 각각 별도 턴으로 묻고, 이미 답한 항목을 반복하지 않는다. 기존 시각 표현 인터뷰의 통합 질문 범위는 유지하되 각 질문의 선택지도 채팅에 표시한다. 자유 입력이 필요한 업체명·대본·파일은 존재하지 않는 선택지를 만들어 번호를 붙이지 않는다.
+- 표시 예시:
+
+```text
+영상 제작 방식을 선택해주세요.
+
+1. AI 영상 생성
+2. 클린본 기존 영상 편집
+```
+
+- 이 표시 선호는 시스템·개발자 지침을 덮어쓰지 않는다. 상위 지침이 채팅 선택형 질문을 명시적으로 금지하거나 특정 질문 도구를 강제하면 그 제한을 따르고, 요청한 표시 방식과의 충돌을 짧게 설명한다. 카드로 조용히 전환하거나 채팅 번호 목록이 보장된다고 보고하지 않는다. 이 예외는 카드가 제공된다는 사실만으로 발동하지 않는다.
+- 표시 수정·진단 요청은 스킬 유지보수다. 실제 제작 인터뷰나 생성을 시작하거나 예시 번호를 사용자의 선택으로 기록하지 않는다.
 
 ## Gate -1 — video-source workflow mode
 
@@ -143,7 +152,7 @@ Do not combine company, product, reference, script, URL, clean-clip upload, rati
 
 ### Early ratio, TTS, and edit interview
 
-Before script planning or visual production, read `references/production-intake.md` completely and collect unresolved choices in this order: **영상 비율 → TTS 생성이랑 영상 편집까지 할까요? → TTS 방식 → 편집 분야**. TTS choices are **1. 레퍼런스 음성 / 2. 사용자 지정 음성**. Editing choices are **1. 건기식 / 2. 뷰티 / 3. 식품 / 4. 그외**. Ask only applicable, unanswered items using the available interview UI; do not merge these choice numbers with either mode menu above.
+Before script planning or visual production, read `references/production-intake.md` completely and collect unresolved choices in this order: **영상 비율 → TTS 생성이랑 영상 편집까지 할까요? → TTS 방식 → 편집 분야**. TTS choices are **1. 레퍼런스 음성 / 2. 사용자 지정 음성**. Editing choices are **1. 건기식 / 2. 뷰티 / 3. 식품 / 4. 그외**. Ask only applicable, unanswered items using the numbered chat display contract above; do not merge these choice numbers with either mode menu above.
 
 An earlier `편집까지 다 해줘` request already answers the scope and defaults the otherwise unspecified voice to the current reference. Skip those questions, preserve explicit voice/settings overrides, and collect only genuinely missing ratio/category/core inputs. Record normalized choices plus exact answers in `production-intake.json`. Once TTS/editing is selected, set `execution_mode: auto` for that selected scope and continue through its final deliverable without another mode, generation, TTS, or edit confirmation. Technical, source, and explicit user-reserved review boundaries remain in force.
 

@@ -21,6 +21,7 @@ description: Analyze any user-supplied product or advertising script, infer its 
 `ai-video-reference-replication`이 `interview_profile: "finalized_script_detail"`로 호출하면 상위 스킬의 `${PLUGIN_ROOT}/skills/ai-video-reference-replication/references/finalized-script-visual-detail-interview.md`를 적용한다. 이 프로필에서만 다음 예외를 허용한다.
 
 - 사용자가 확정한 대본 뒤 한 번의 통합 질문 턴에서 최대 6개의 묶음 질문을 한다.
+- 질문 표시는 상위 스킬의 **질문 표시 — 채팅 번호 목록** 계약을 승계한다. 묶음 질문과 각 선택지를 일반 채팅에 남기며, 카드나 선택 위젯으로 임의 전환하지 않는다.
 - 시각 기획의 의미 단위, 컷 수 또는 CTA 구도를 바꾸는 대본 오탈자·동음이의어·발음 교정, 목표 낭독 시간, 레퍼런스형 배너·자막 여부를 물을 수 있다.
 - 사용자가 표현 강도나 세부 설정을 임의로 정하지 말라고 하면 미확정 고영향 변수에 기본값을 선택하지 않고 답변 전까지 `ready_for_visual_planning: false`로 유지한다.
 
