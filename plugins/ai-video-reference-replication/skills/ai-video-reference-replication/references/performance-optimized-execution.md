@@ -15,11 +15,15 @@ Adaptive duration does not weaken batching. Schedule independent `3.0 s`, `4.0 s
 
 ## GPT-only image generation
 
+Use `execution_pipeline: per_cut_streaming` and read `per-cut-streaming.md`. Keep independent image requests in flight; handle each completion immediately with per-cut QC and atomic rolling diversity validation, then upload and submit that cut's Kling video while remaining images continue. A full image batch/full-set contact sheet is not a pre-submission barrier. The full-set diversity audit remains required for final promotion. Use the local streaming state/ledger helpers and keep the tools' actual provider calls in the agent.
+
+Before collecting product inputs again, follow `product-knowledge-persistence.md`: inspect and reuse the exact-product library, capture only new/changed inputs and keep a run snapshot. This is mandatory even without CapCut. Ask only for missing/ambiguous information that the saved matching sources cannot supply.
+
 The video motion provider remains Higgsfield Kling v3.0, but Higgsfield is forbidden for still-image generation. Every new or resumed future image action must use `image_generation_mode: "openai_only"` and `image_generation_route: "built_in_image_gen"` with one built-in OpenAI `image_gen` first-attempt candidate per cut. Record `higgsfield_image_jobs: 0`, `image_api_jobs: 0`, and `image_cli_jobs: 0`. Historical Higgsfield, direct API, or CLI records are read-only provenance and never authorize a new image submission through those routes.
 
 The built-in `image_gen` tool has no documented multi-scene batch parameter; issue one call per distinct scene and run independent calls concurrently. Do not switch to the ImageGen CLI or direct Images API for batching, file-path control, quality, or size.
 
-Start with `openai_concurrency: 5` for a Tier-1 OpenAI account. The OpenAI documented rate limit is IPM/TPM by tier, not a fixed simultaneous-image maximum; lower concurrency on 429/5xx and only raise it after the current account's preflight/headers prove the available limit. This is an internal starting cap, not a provider guarantee or exact images-per-minute promise.
+Use `openai_concurrency: 5` as an internal starting cap, lowering it on the built-in tool's actual capacity/errors. Do not equate a direct Images API account tier with this built-in tool's limits. Increase only with current capacity evidence. Start the separate video lane at a conservative cap of 3, within the current provider limits; batch size is not concurrency. No setting guarantees a fixed images-per-minute rate.
 
 For each cut, retain the OpenAI candidate record even when it is rejected. A candidate key must include the route `built_in_image_gen` so a timeout cannot cause a duplicate submission. Only a QC-passing built-in ImageGen candidate may be passed as Kling's start image; no Higgsfield still, API/CLI still, end image, or local motion fallback is allowed.
 

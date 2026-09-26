@@ -61,6 +61,8 @@
 
 ## 3. Reuse policy
 
+- Every parent video run also follows `../../ai-video-reference-replication/references/product-knowledge-persistence.md`. Persist acquired official images, product facts/USP and source URLs immediately; copy original bytes into the exact-product knowledge store without moving legacy originals. Preserve existing `product-assets.json` QC/approval records. The store also works when CapCut is not installed or not requested.
+- On later runs inspect the saved exact-product pack first. A complete unchanged pack does not require reattachment or full page reanalysis. Ask only for missing/ambiguous inputs after the saved official sources fail to supply them; refresh affected packaging assets when new user materials or current task evidence show a change.
 - 제품 앵커는 같은 업체·같은 제품에서만 재사용한다.
 - 기존 제품 마스터라도 현재 상세페이지의 용기, 포장 버전, 용량, 뚜껑, 색상과 라벨 배치가 일치하는지 다시 확인한다.
 - 다른 제품의 실루엣, 라벨, 내용물, 원료 또는 사용 결과를 가져오지 않는다.

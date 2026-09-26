@@ -304,18 +304,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         company_dir = root / company
         company_dir.mkdir(mode=0o755, exist_ok=False)
 
-    product_dir = resolve_exact_directory(company_dir, product, "product")
+    product_parent = resolve_exact_directory(company_dir, "영상", "video library") or company_dir
+    product_dir = resolve_exact_directory(product_parent, product, "product")
     if product_dir is None:
         if not args.create_product_scope:
             raise IntakeError(f"exact product scope does not exist: {product}")
-        product_dir = company_dir / product
+        product_dir = product_parent / product
         product_dir.mkdir(mode=0o755, exist_ok=False)
 
     library_dir = product_dir / LIBRARY_DIRECTORY
-    originals_dir = library_dir / ORIGINALS_DIRECTORY
+    originals_dir = (product_dir / "클린본" / "사용자 제공 클린본"
+                     if product_parent != company_dir else library_dir / ORIGINALS_DIRECTORY)
     ensure_plain_directory(originals_dir)
+    ensure_plain_directory(library_dir)
     manifest_path = library_dir / MANIFEST_NAME
     manifest = load_manifest(manifest_path, root, company_dir, product_dir)
+    manifest["product_dir"] = str(product_dir)
+    manifest["stored_clean_clips_dir"] = str(originals_dir)
     clips: list[dict[str, Any]] = manifest["clips"]
 
     by_hash: dict[str, dict[str, Any]] = {}

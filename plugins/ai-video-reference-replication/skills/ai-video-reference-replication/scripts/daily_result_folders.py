@@ -78,6 +78,10 @@ def library_lock(root):
 def day_paths(root, value):
     day = root / day_name(value)
     clean, records = day / '생성 클린본', day / '작업 기록'
+    product = root.parent
+    if unicodedata.normalize('NFC', product.parent.name) == '영상' and (product / '클린본').is_dir():
+        require(not (product / '클린본').is_symlink(), '제품 클린본은 실제 폴더여야 합니다')
+        clean = product / '클린본' / 'AI 생성' / day.name
     for path in (day, clean, records):
         require(not path.is_symlink(), f'날짜별 저장 폴더는 실제 폴더여야 합니다: {path}')
         require(not path.exists() or path.is_dir(), f'폴더 경로가 파일과 충돌합니다: {path}')
@@ -139,7 +143,7 @@ def init_run(output_root, generation_date=None, label='생성 작업'):
     with library_lock(root):
         day, clean, records = day_paths(root, generation_date)
         clean.mkdir(parents=True, exist_ok=True)
-        records.mkdir(exist_ok=True)
+        records.mkdir(parents=True, exist_ok=True)
         index = 1
         while (records / f'{label} {index:03d}').exists():
             index += 1
@@ -200,7 +204,7 @@ def collect(output_root, generation_date, clips, *, expected_count=None, dry_run
         daily_total = len(manifest['clips']) + len(new_records)
         if not dry_run:
             clean.mkdir(parents=True, exist_ok=True)
-            records.mkdir(exist_ok=True)
+            records.mkdir(parents=True, exist_ok=True)
             for item in planned:
                 if item['move']:
                     replace_source_with_link(item['resolved_source'], item['target'], item['sha256'])

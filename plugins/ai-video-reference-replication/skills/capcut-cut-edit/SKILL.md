@@ -3,6 +3,15 @@ name: capcut-cut-edit
 description: "Default for 컷편집 해줘, 컷편집해줘, or CapCut cut editing: natural short pauses and dialogue captions aligned to actual speech onset. Also applies shared timing rules to script, clean footage, and voice editing across product categories."
 ---
 
+## 업체별 영상 폴더 기준 (2026-09-19)
+
+- 사용자가 이번 작업에서 지정한 소스가 우선이다. 업체·제품 소스를 요청하면 `/Users/seojun/Documents/인코어/<업체>/영상/<제품>/클린본`을 기본으로 사용한다. 경로의 한글은 Unicode 정규화 후 정확히 일치하는 업체·제품만 선택한다.
+- 편집 시작 전에 실제 소스 폴더의 절대경로와 사용 가능한 영상 개수를 사용자에게 짧게 알린다. 하위 폴더까지 현재 파일을 확인하고, 예전 매니페스트에 없다는 이유로 같은 제품의 새 클린본을 누락하지 않는다. 링크는 같은 업체·제품 내부만 해석하고 실제 경로 기준으로 중복 집계하지 않는다. 존재하지 않거나 읽지 못한 파일은 개수와 구별해 보고한다.
+- `완성본`은 완성 영상 보관용, `레퍼런스`는 참고 영상용이다. 별도 요청 없이 이 두 폴더를 클린 소스로 사용하지 않는다. `제품 미분류`는 사용자 지정 전 다른 제품 소스에 섞지 않는다.
+- 새로 제공받아 보관하는 클린 원본은 `<제품>/클린본/사용자 제공 클린본`, 검수 통과한 AI 생성 클린본은 `<제품>/클린본/AI 생성/YYYY-MM-DD`에 저장한다. 같은 날짜의 추가 생성은 같은 폴더에 모은다. 새 완성 영상의 업체 보관 위치는 `<제품>/완성본`이다.
+- 기존 제품 정보·생성 작업 기록은 제품 폴더 안의 숨김 자료로 보존되어 있다. `생성 결과물`은 내부 작업 이력용이며, 사용자가 보는 생성 클린본 경로는 위 `클린본/AI 생성`이다. 이전 경로 연결과 서명된 작업 기록은 임의 삭제하거나 일괄 치환하지 않는다.
+
+
 ## 공유 플러그인 실행 경로
 
 이 문서가 들어 있는 `skills`의 상위 폴더를 `PLUGIN_ROOT`로 확인하고, 먼저 `../../references/recipient-runtime.md`를 읽는다. `${PLUGIN_ROOT}`는 현재 설치된 이 플러그인의 절대 경로로, `${VIDEO_PRODUCT_LIBRARY_ROOT}`와 `${CAPCUT_AUTOMATION_ROOT}`는 수신자 환경의 경로로 해석한다. 하위 스킬은 이 플러그인 안의 형제 폴더를 우선 사용한다. 플러그인 제작·수정·공유 요청은 영상 제작 인터뷰나 유료 생성, 앱 종료를 시작하지 않는다.

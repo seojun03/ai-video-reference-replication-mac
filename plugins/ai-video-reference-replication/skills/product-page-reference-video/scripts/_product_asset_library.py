@@ -205,6 +205,17 @@ def ensure_canonical_product_tree(product_path: Path) -> list[Path]:
             continue
         create_directory_exclusive(target, "canonical product subdirectory")
         created.append(target)
+    if normalized_match_key(product_path.parent.name) == "영상":
+        import stat
+        for directory_name in CANONICAL_DIRECTORIES.values():
+            path = product_path / directory_name
+            if hasattr(os, "lchflags"):
+                os.lchflags(path, path.lstat().st_flags | stat.UF_HIDDEN)
+        for directory_name in ("완성본", "클린본", "레퍼런스"):
+            path = product_path / directory_name
+            if path.is_symlink() or (path.exists() and not path.is_dir()):
+                raise FilesystemConflictError("video category must be a plain directory", path=str(path))
+            path.mkdir(exist_ok=True)
     return created
 
 

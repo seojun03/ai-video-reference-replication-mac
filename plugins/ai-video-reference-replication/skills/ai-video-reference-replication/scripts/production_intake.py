@@ -162,6 +162,16 @@ def resolve(answers):
             "production_blocked_until_confirmed": True,
         },
         "answers": copy.deepcopy(answers),
+        "product_knowledge": {
+            "enabled": True,
+            "scope": "exact_company_product",
+            "reuse_before_requesting_inputs": True,
+            "capture_on_input_change": True,
+            "requires_capcut_engine": False,
+            "library": None,
+            "snapshot_path": None,
+            "status": "awaiting_exact_product_resolution",
+        },
         "boundary": "Interview choices only; not proof of media, voice rights, cost limits, QC, or saved delivery.",
     }
 

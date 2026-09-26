@@ -99,15 +99,17 @@ def resolve(args: argparse.Namespace) -> dict[str, Any]:
     if company_path is None:
         company_path = root / requested_company
 
+    video_parent = find_single_exact_directory(company_path, normalized_match_key("영상"), "video library") if company_existed else None
+    product_parent = video_parent or company_path
     product_path = (
-        find_single_exact_directory(company_path, product_key, "product")
+        find_single_exact_directory(product_parent, product_key, "product")
         if company_existed
         else None
     )
     product_existed = product_path is not None
     created_product = False
     if product_path is None:
-        product_path = company_path / requested_product
+        product_path = product_parent / requested_product
 
     if product_existed:
         status = "existing_product"
